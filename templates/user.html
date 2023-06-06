@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+{% load static i18n %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="{% static 'js/siteScript/bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/siteScript/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'js/siteScript/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'js/siteScript/dataTables.responsive.min.js' %}"></script>
+  <style>
+    label {
+        font-weight: 600;
+        color: #666;
+    }
+    body {
+      background: #f1f1f1;
+    }
+    .box8{
+      box-shadow: 0px 0px 5px 1px #999;
+    }
+    .panel-primary {
+        border-color: #337ab7;
+    }
+    .panel-heading {
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #337ab7;
+    }
+    .panel-heading h3 strong{
+        color: #fff;
+    }
+    .delete { cursor: pointer; }
+
+  </style>
+</head>
+<body>
+<div class="container mt-3">
+
+{% csrf_token %}
+  <div class="row">
+      <div class="col-6 ">
+         <h1>Welcome {{request.session.user}}</h1>
+      </div>
+      <div class="col-6 ">
+        <div class="row">
+          {% if request.session.is_admin %}
+          <div class="col-4"><a href="{% url 'add_user' %}">Add Employee</a></div>
+          <div class="col-4"><a href="{% url 'task' %}" >Add Task</a></div>
+          {% else %}
+          <div class="col-8"></div>
+          {% endif %}
+          <div class="col-4"><h3><a href="{% url 'logout' %}">logout</a> </h3></div>
+        </div>
+
+      </div>
+    </div>
+      {% if request.session.is_admin and users %}
+
+      <div class="panel panel-primary mt-5">
+      <div class="panel-heading">
+        <h3 class="panel-title text-center text-info"><strong> Users</strong></h3>
+      </div>
+    <div class="panel-body">
+      <table class="table table-hover" id='employee-table'>
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>User Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for employee in users %}
+            <tr>
+              <td>{{forloop.counter}}</td>
+              <td>{{employee.first_name}} {{employee.last_name}}</td>
+              <td>{{employee.email}}</td>
+              <td>{{employee.phone}}</td>
+              <td>{{employee.address}}</td>
+              <td class="{{employee.id}}"><div class="update"><a href="{% url 'employee' employee.id %}"> update</a></div><div class="delete">
+                 delete</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+      {% endif %}
+
+
+  {% if tasks %}
+  <div class="panel-heading">
+        <h3 class="panel-title text-center text-info"><strong>Tasks</strong></h3>
+      </div>
+   <div class="panel-body">
+
+      <table class="table table-hover" id='task-table'>
+        <thead>
+          <tr>
+            <th>S. no.</th>
+            <th>Description</th>
+            <th>Assign to</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+            <tr>
+              <td>{{forloop.counter}}</td>
+              <td>{{task.task}} </td>
+              <td>{{task.assign_to.first_name}} </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+<script>
+
+  $('.delete').on("click", function(){
+   id = $(this).closest("td").attr("class")
+   token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+    $.ajax({
+      type: 'DELETE',
+      headers: {'X-CSRFToken': token},
+      url: '/user/?id='+id,
+      data: { 'id': id },
+      success: function() {
+          window.location = '{% url 'user' %}';
+      }
+    });
+  })
+</script>
+</body>
+</html>
